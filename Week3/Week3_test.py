@@ -1,7 +1,7 @@
 #this lets us show the figures, but not interactively
 #%matplotlib inline
-#import pandas as pd
-#import geopandas as gpd
+import pandas as pd
+import geopandas as gpd
 import shapely
 from shapely.geometry import Point, LineString, Polygon
 
@@ -85,3 +85,24 @@ from shapely.geometry import Point, LineString, Polygon
 # print(line1.intersection(line2)) # if the lines intersect, this will be the Point(s) of intersection
 # print(line1.intersection(poly)) # if the line intersects a polygon, the result may be a line or a point
 
+#geopandas section
+
+roads = gpd.read_file('Week3/data_files/NI_roads.shp')
+
+roads.head() # show the first five rows of the table
+
+print(roads.head)
+
+# roads.crs
+#
+# print(roads.crs)
+#
+# roads.crs.to_json() # show the representation of the CRS in JSON format
+#
+# #help(roads.to_crs) # show the help for the .to_crs() method
+#
+roads_itm = roads.to_crs(epsg=2157) # replace XX with the correct EPSG code for Irish Transverse Mercator
+#
+roads_itm.head()
+
+print(roads_itm.head())
