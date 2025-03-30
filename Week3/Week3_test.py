@@ -1,5 +1,7 @@
 #this lets us show the figures, but not interactively
 #%matplotlib inline
+import timeit
+
 import pandas as pd
 import geopandas as gpd
 import shapely
@@ -91,7 +93,7 @@ roads = gpd.read_file('Week3/data_files/NI_roads.shp')
 
 roads.head() # show the first five rows of the table
 
-print(roads.head)
+#print(roads.head)
 
 # roads.crs
 #
@@ -100,9 +102,52 @@ print(roads.head)
 # roads.crs.to_json() # show the representation of the CRS in JSON format
 #
 # #help(roads.to_crs) # show the help for the .to_crs() method
-#
+
 roads_itm = roads.to_crs(epsg=2157) # replace XX with the correct EPSG code for Irish Transverse Mercator
-#
+
 roads_itm.head()
 
+#print(roads_itm.head())
+
+#roads_itm[roads_itm['Road_class'] == 'MOTORWAY']
+
+#for ind, row in roads_itm.iterrows(): # iterate over each row in the GeoDataFrame
+    #roads_itm.loc[ind, 'Length'] = row['geometry'].length / 1000 # assign the row's geometry length to a new column, Length, by dividing the geometry length by 1000
+
+#roads_itm.head()
+
+#print(roads_itm.head())
+
+#type(roads_itm['geometry'])
+
+#print(type(roads_itm['geometry']))
+
+roads_itm['geometry'].length # show the length of each geometry in the geodataframe
+
+print(roads_itm['geometry'].length)
+
+roads_itm['Length'] = roads_itm.geometry.length
+
 print(roads_itm.head())
+
+# wrap the for loop in a function to make it easier to use with %timeit
+#def iterrate_length(gdf):
+    #for ind, row in gdf.iterrows():
+        #row['geometry'].length / 1000
+
+# wrap the vector operation in a function to make it easier to use with %timeit
+#def vector_length(gdf):
+    #gdf['geometry'].length / 1000
+
+#%timeit iterrate_length(roads_itm)
+
+#%timeit vector_length(roads_itm)
+
+sum_roads = roads_itm['Length'].sum()
+sum_motorway = roads_itm[roads_itm['Road_class'] == 'MOTORWAY']['Length'].sum()
+print(f'{sum_roads:.2f} total km of roads')
+print(f'{sum_motorway:.2f} total km of motorway')
+
+roads_itm.groupby(['Road_class'])['Length'].sum()
+
+print(roads_itm.groupby(['Road_class'])['Length'].sum())
