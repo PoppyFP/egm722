@@ -90,8 +90,8 @@ from shapely.geometry import Point, LineString, Polygon
 #geopandas section
 
 roads = gpd.read_file('Week3/data_files/NI_roads.shp')
-
-roads.head() # show the first five rows of the table
+#
+#roads.head() # show the first five rows of the table
 
 #print(roads.head)
 
@@ -104,8 +104,8 @@ roads.head() # show the first five rows of the table
 # #help(roads.to_crs) # show the help for the .to_crs() method
 
 roads_itm = roads.to_crs(epsg=2157) # replace XX with the correct EPSG code for Irish Transverse Mercator
-
-roads_itm.head()
+#
+# roads_itm.head()
 
 #print(roads_itm.head())
 
@@ -123,12 +123,12 @@ roads_itm.head()
 #print(type(roads_itm['geometry']))
 
 roads_itm['geometry'].length # show the length of each geometry in the geodataframe
-
-print(roads_itm['geometry'].length)
-
+#
+# print(roads_itm['geometry'].length)
+#
 roads_itm['Length'] = roads_itm.geometry.length
-
-print(roads_itm.head())
+#
+# print(roads_itm.head())
 
 # wrap the for loop in a function to make it easier to use with %timeit
 #def iterrate_length(gdf):
@@ -143,11 +143,41 @@ print(roads_itm.head())
 
 #%timeit vector_length(roads_itm)
 
-sum_roads = roads_itm['Length'].sum()
-sum_motorway = roads_itm[roads_itm['Road_class'] == 'MOTORWAY']['Length'].sum()
-print(f'{sum_roads:.2f} total km of roads')
-print(f'{sum_motorway:.2f} total km of motorway')
+# sum_roads = roads_itm['Length'].sum()
+# sum_motorway = roads_itm[roads_itm['Road_class'] == 'MOTORWAY']['Length'].sum()
+# print(f'{sum_roads:.2f} total km of roads')
+# print(f'{sum_motorway:.2f} total km of motorway')
+#
+# roads_itm.groupby(['Road_class'])['Length'].sum()
+#
+# print(roads_itm.groupby(['Road_class'])['Length'].sum())
 
-roads_itm.groupby(['Road_class'])['Length'].sum()
+#spatial data operations section
 
-print(roads_itm.groupby(['Road_class'])['Length'].sum())
+counties = gpd.read_file('Week3/data_files/Counties.shp') # load the Counties shapefile
+
+counties_itm = counties.to_crs(epsg=2157) # your line of code might go here.
+
+#print(counties_itm.crs == roads_itm.crs) # test if the crs is the same for roads_itm and counties.
+
+join = gpd.sjoin(counties_itm, roads_itm, how='inner', lsuffix='left', rsuffix='right') # perform the spatial join
+
+#print(join) # show the joined table
+
+pd.set_option('display.max_columns', None)
+
+print(join)
+
+group_county_road = join.groupby(['CountyName', 'Road_class']) # group by county name, then road class
+
+group_county_road['Length'].sum() # show the total number of km for each category
+
+print(group_county_road['Length'].sum())
+
+join_total = join['Length'].sum() # find the total length of roads in the join GeoDataFrame
+
+# check that the total length of roads is the same between both GeoDataFrames
+print(f'Total length of roads from original file: {sum_roads:.2f}')
+print(f'Total length of roads from spatial join: {join_total:.2f}')
+print(f'Absolute difference in road length: {abs(sum_roads - join_total):0.2f} km') # calculate the absolute difference as a percentage
+print(f'Absolute difference in road length: {(100 * abs(sum_roads - join_total) / sum_roads):0.2f}%') # calculate the absolute difference as a percentage
