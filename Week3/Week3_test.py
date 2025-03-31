@@ -143,7 +143,7 @@ roads_itm['Length'] = roads_itm.geometry.length
 
 #%timeit vector_length(roads_itm)
 
-# sum_roads = roads_itm['Length'].sum()
+sum_roads = roads_itm['Length'].sum()
 # sum_motorway = roads_itm[roads_itm['Road_class'] == 'MOTORWAY']['Length'].sum()
 # print(f'{sum_roads:.2f} total km of roads')
 # print(f'{sum_motorway:.2f} total km of motorway')
@@ -181,3 +181,32 @@ print(f'Total length of roads from original file: {sum_roads:.2f}')
 print(f'Total length of roads from spatial join: {join_total:.2f}')
 print(f'Absolute difference in road length: {abs(sum_roads - join_total):0.2f} km') # calculate the absolute difference as a percentage
 print(f'Absolute difference in road length: {(100 * abs(sum_roads - join_total) / sum_roads):0.2f}%') # calculate the absolute difference as a percentage
+
+not_unique = len(join.index) - len(join.index_right.unique()) # get the difference between the number of objects in the table and the unique objects in the table
+
+print(f'There are {not_unique} duplicated objects in the joined table.')
+
+#help(gpd.clip)
+
+clipped = [] # initialize an empty list
+for county in counties['CountyName'].unique(): # iterate over unique values of county
+    tmp_clip = gpd.clip(roads_itm, counties_itm[counties['CountyName'] == county]) # clip the roads by county border
+    tmp_clip['Length'] = tmp_clip['geometry'].length / 1000 # remember to update the length for any clipped roads
+    tmp_clip['CountyName'] = county # set the county name for each road feature
+
+    clipped.append(tmp_clip) # add the clipped GeoDataFrame to the list
+
+clipped_gdf = gpd.GeoDataFrame(pd.concat(clipped, ignore_index=True)) # create a geodataframe from the combined county geodataframes
+
+clipped_gdf # show the new, combined geodataframe
+
+print(clipped_gdf)
+
+# pandas has a function, concat, which will combine (concatenate) a list of DataFrames (or GeoDataFrames)
+# we can then create a GeoDataFrame from the combined DataFrame, as the combined DataFrame will have a geometry column.
+clip_total = clipped_gdf['Length'].sum()
+
+print(f'Total length of roads from original file: {sum_roads:.2f} m')
+print(f'Total length of roads from clipped join: {clip_total:.2f} m')
+print(f'Absolute difference in road length: {abs(sum_roads - clip_total):0.2f} km')
+print(f'Absolute difference in road length: {(100 * abs(sum_roads - clip_total) / sum_roads):0.2f}%')
