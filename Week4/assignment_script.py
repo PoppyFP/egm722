@@ -7,7 +7,10 @@ from shapely.ops import unary_union
 from shapely.geometry.polygon import Polygon
 from cartopy.feature import ShapelyFeature
 import matplotlib.patches as mpatches
-
+import os
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
 
 def percentile_stretch(img, pmin=0., pmax=100.):
     '''
@@ -56,16 +59,22 @@ def img_display(img, ax, bands, stretch_args=None, **imshow_args):
 # note - rasterio's open() function works in much the same way as python's - once we open a file,
 # we have to make sure to close it. One easy way to do this in a script is by using the with statement shown
 # below - once we get to the end of this statement, the file is closed.
-with rio.open('data_files/NI_Mosaic.tif') as dataset:
+with rio.open('Week4/data_files/NI_Mosaic.tif') as dataset:
     img = dataset.read()
     xmin, ymin, xmax, ymax = dataset.bounds
 
 # your code goes here!
 # start by loading the outlines and point data to add to the map
 
+counties = gpd.read_file(os.path.abspath('Week2/data_files/Counties.shp'))
+towns = gpd.read_file(os.path.abspath('Week2/data_files/Towns.shp'))
 
 # next, create the figure and axis objects to add the map to
 
+ni_utm = ccrs.UTM(29)
+
+fig = plt.figure(figsize=(8, 8))
+ax = plt.axes(projection=ni_utm)
 
 # now, add the satellite image to the map
 
