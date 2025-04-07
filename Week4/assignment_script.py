@@ -11,6 +11,8 @@ import os
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+import rasterio as rio
+from cartopy.feature import ShapelyFeature
 
 def percentile_stretch(img, pmin=0., pmax=100.):
     '''
@@ -68,6 +70,7 @@ with rio.open('Week4/data_files/NI_Mosaic.tif') as dataset:
 
 counties = gpd.read_file(os.path.abspath('Week2/data_files/Counties.shp'))
 towns = gpd.read_file(os.path.abspath('Week2/data_files/Towns.shp'))
+outline = gpd.read_file(os.path.abspath('Week2/data_files/NI_outline.shp'))
 
 # next, create the figure and axis objects to add the map to
 
@@ -78,9 +81,30 @@ ax = plt.axes(projection=ni_utm)
 
 # now, add the satellite image to the map
 
+#ni_utm = ccrs.UTM(29) # note that this matches with the CRS of our image
+#fig, ax = plt.subplots(1, 1, figsize=(10, 10), subplot_kw=dict(projection=ni_utm))
+
+#ax.imshow(img[3], cmap='gray', vmin=200, vmax=5000)
+#ax.set_extent([xmin, xmax, ymin, ymax], crs=ni_utm)
+
+#fig, ax = plt.subplots(figsize=(8, 8),
+                       #subplot_kw=dict(projection=ccrs.UTM(29)))
+
+#ax.set_extent([xmin, xmax, ymin, ymax], crs=ni_utm)
+#ax.background_img(name='NI_Mosaic', resolution='med')
+
+#ax.add_image()
+
+#xmin, ymin, xmax, ymax = outline.total_bounds
+#ax.set_extent([xmin-5000, xmax+5000, ymin-5000, ymax+5000], crs=ni_utm)
 
 # next, add the county outlines to the map
 
+outline_feature = ShapelyFeature(outline['geometry'], ni_utm, edgecolor='k', facecolor='w')
+ax.add_feature(outline_feature)
+
+xmin, ymin, xmax, ymax = outline.total_bounds
+ax.set_extent([xmin-5000, xmax+5000, ymin-5000, ymax+5000], crs=ni_utm)
 
 # then, add the town and city points to the map, but separately
 
@@ -96,3 +120,4 @@ ax = plt.axes(projection=ni_utm)
 
 # and of course, save the map!
 
+fig.savefig('map2.png', bbox_inches='tight', dpi=300)
