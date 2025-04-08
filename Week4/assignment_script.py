@@ -76,27 +76,15 @@ outline = gpd.read_file(os.path.abspath('Week2/data_files/NI_outline.shp'))
 
 ni_utm = ccrs.UTM(29)
 
-fig = plt.figure(figsize=(8, 8))
+fig = plt.figure(figsize=(10, 10))
 ax = plt.axes(projection=ni_utm)
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 10), subplot_kw=dict(projection=ni_utm))
 
 # now, add the satellite image to the map
 
-#ni_utm = ccrs.UTM(29) # note that this matches with the CRS of our image
-#fig, ax = plt.subplots(1, 1, figsize=(10, 10), subplot_kw=dict(projection=ni_utm))
-
-#ax.imshow(img[3], cmap='gray', vmin=200, vmax=5000)
-#ax.set_extent([xmin, xmax, ymin, ymax], crs=ni_utm)
-
-#fig, ax = plt.subplots(figsize=(8, 8),
-                       #subplot_kw=dict(projection=ccrs.UTM(29)))
-
-#ax.set_extent([xmin, xmax, ymin, ymax], crs=ni_utm)
-#ax.background_img(name='NI_Mosaic', resolution='med')
-
-#ax.add_image()
-
-#xmin, ymin, xmax, ymax = outline.total_bounds
-#ax.set_extent([xmin-5000, xmax+5000, ymin-5000, ymax+5000], crs=ni_utm)
+ax.imshow(img[0], cmap='gray', vmin=200, vmax=5000)
+ax.set_extent([xmin, xmax, ymin, ymax], crs=ni_utm)
 
 # next, add the county outlines to the map
 
@@ -108,6 +96,17 @@ ax.set_extent([xmin-5000, xmax+5000, ymin-5000, ymax+5000], crs=ni_utm)
 
 # then, add the town and city points to the map, but separately
 
+counties_feature = ShapelyFeature(counties['geometry'], ni_utm, edgecolor='k', facecolor='w')
+ax.add_feature(counties_feature)
+
+xmin, ymin, xmax, ymax = counties.total_bounds
+ax.set_extent([xmin-5000, xmax+5000, ymin-5000, ymax+5000], crs=ni_utm)
+
+#town_handle = ax.plot(towns.geometry.x, towns.geometry.y, 's', color='0.5', ms=6, transform=ccrs.PlateCarree())
+
+#towns_feature = ShapelyFeature(towns['geometry'], ni_utm, edgecolor='k', facecolor='w')
+#ax.add_feature(towns_feature)
+
 
 # finally, try to add a transparent overlay to the map
 # note: one way you could do this is to combine the individual county shapes into a single shape, then
@@ -117,6 +116,11 @@ ax.set_extent([xmin-5000, xmax+5000, ymin-5000, ymax+5000], crs=ni_utm)
 
 # last but not least, add gridlines to the map
 
+gridlines = ax.gridlines(draw_labels=True, # draw  labels for the grid lines
+                         xlocs=[-8, -7.5, -7, -6.5, -6, -5.5], # add longitude lines at 0.5 deg intervals
+                         ylocs=[56, 55.5, 55, 54.5, 54]) # add latitude lines at 0.5 deg intervals
+gridlines.left_labels = False # turn off the left-side labels
+gridlines.bottom_labels = False # turn off the bottom labels
 
 # and of course, save the map!
 
